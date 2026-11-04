@@ -1,46 +1,285 @@
 <!doctype html>
 <html class="landing" lang="en" manifest="cache.appcache">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>pshost</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- Every run starts from here. The referrer guard in jb.js arms the chain
-         only when it was reached from this page, so that a browser restoring
-         its last session cannot re-run it unattended. -->
-    <div id="brand"><b>PSHost</b></div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PSHost</title>
 
-    <div class="shell">
-      <img class="meme" src="meme.png" alt="" />
+  <style>
+    :root {
+      --bg:#0b0d10;
+      --panel:#0e1116;
+      --sunk:#11151b;
+      --line:#1e2732;
+      --fg:#c8ced8;
+      --bright:#e6ebf2;
+      --dim:#7c8798;
+      --faint:#4d5765;
+      --ok:#7fd0a0;
+      --gold:#d8c07f;
+      --sans:"Segoe UI",system-ui,sans-serif;
+      --mono:Consolas,"DejaVu Sans Mono",monospace;
+    }
 
-      <main class="panel">
-        <p class="lede">PS4 kernel exploit &middot; firmware 13.52 and 14.00</p>
+    * {
+      box-sizing:border-box;
+    }
 
-        <form class="pick" id="pick">
-          <label class="opt">
-            <input type="radio" name="payload" value="hen" />
-            <span>ps4-hen (might kernel panic)</span>
-          </label>
-          <label class="opt">
-            <input type="radio" name="payload" value="goldhen" checked />
-            <span>GoldHEN</span>
-          </label>
+    html,body {
+      margin:0;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--fg);
+      font:15px/1.45 var(--sans);
+    }
 
-          <label class="opt opt-auto">
-            <input type="checkbox" id="auto" checked />
-            <span>autostart</span>
-          </label>
+    #brand {
+      padding:12px 16px;
+      border-bottom:1px solid var(--line);
+      background:var(--panel);
+      text-align:center;
+    }
 
-          <button class="btn" type="submit">start</button>
-          <p class="count" id="count"></p>
-          <p class="count" id="cache" aria-live="polite"></p>
-        </form>
-      </main>
-    </div>
+    #brand b {
+      color:var(--bright);
+      font-size:15px;
+      font-weight:700;
+      letter-spacing:.16em;
+    }
 
-    <p class="byline">by l1f3less, credits to m0zz or well0nez</p>
-    <script src="launch.js"></script>
-  </body>
+    .shell {
+      width:min(900px,100%);
+      margin:0 auto;
+      padding:34px 18px;
+    }
+
+    .meme {
+      display:none;
+    }
+
+    .panel {
+      width:100%;
+    }
+
+    .lede {
+      margin:0 0 28px;
+      color:var(--dim);
+      text-align:center;
+      font-size:13px;
+      letter-spacing:.04em;
+    }
+
+    .pick {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .opt {
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-height:150px;
+      padding:22px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:var(--panel);
+      color:var(--fg);
+      cursor:pointer;
+      transition:border-color .15s,background .15s,transform .15s;
+    }
+
+    .opt:hover {
+      transform:translateY(-2px);
+      border-color:#465363;
+    }
+
+    .opt input[type="radio"] {
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .opt span {
+      display:block;
+    }
+
+    .opt span::before {
+      display:block;
+      margin-bottom:12px;
+      color:var(--faint);
+      font:11px var(--mono);
+      letter-spacing:.08em;
+    }
+
+    .opt:nth-child(1) span::before {
+      content:"OPTION 01 / LEFT";
+    }
+
+    .opt:nth-child(2) span::before {
+      content:"OPTION 02 / RIGHT";
+    }
+
+    .opt span {
+      color:var(--bright);
+      font-size:22px;
+      font-weight:700;
+    }
+
+    .opt input:checked + span {
+      color:var(--ok);
+    }
+
+    .opt:has(input:checked) {
+      border-color:var(--ok);
+      background:#101a17;
+    }
+
+    .opt:nth-child(2):has(input:checked) {
+      border-color:var(--gold);
+      background:#1a1811;
+    }
+
+    .opt-auto {
+      grid-column:1 / -1;
+      min-height:0;
+      flex-direction:row;
+      align-items:center;
+      justify-content:flex-start;
+      gap:12px;
+      padding:14px 16px;
+      border-radius:6px;
+      background:var(--sunk);
+      font:12px var(--mono);
+    }
+
+    .opt-auto span {
+      color:var(--dim);
+      font-size:12px;
+      font-weight:400;
+    }
+
+    .opt-auto span::before {
+      display:none;
+    }
+
+    .opt-auto input {
+      accent-color:var(--ok);
+    }
+
+    .btn {
+      grid-column:1 / -1;
+      width:100%;
+      padding:14px;
+      border:1px solid #355443;
+      border-radius:6px;
+      background:#14231b;
+      color:var(--ok);
+      font:700 13px var(--mono);
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      cursor:pointer;
+      transition:background .15s,border-color .15s;
+    }
+
+    .btn:hover {
+      background:#1b3024;
+      border-color:var(--ok);
+    }
+
+    .btn:active {
+      transform:translateY(1px);
+    }
+
+    .count {
+      grid-column:1 / -1;
+      margin:0;
+      color:var(--dim);
+      font:11px/1.5 var(--mono);
+      text-align:center;
+      overflow-wrap:anywhere;
+    }
+
+    #cache {
+      color:var(--ok);
+    }
+
+    .byline {
+      position:fixed;
+      bottom:9px;
+      left:11px;
+      margin:0;
+      color:var(--faint);
+      font:11px/1 var(--mono);
+      letter-spacing:.06em;
+    }
+
+    @media(max-width:560px) {
+      .shell {
+        padding:25px 16px;
+      }
+
+      .pick {
+        grid-template-columns:1fr;
+      }
+
+      .opt {
+        min-height:125px;
+      }
+
+      .opt-auto {
+        min-height:0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="brand">
+    <b>PSHOST</b>
+  </div>
+
+  <div class="shell">
+    <img class="meme" src="meme.png" alt="">
+
+    <main class="panel">
+      <p class="lede">
+        PS4 KERNEL EXPLOIT &middot; FIRMWARE 13.52 AND 14.00
+      </p>
+
+      <form class="pick" id="pick">
+        <label class="opt">
+          <input type="radio" name="payload" value="hen">
+          <span>PS4-HEN</span>
+          <small>might kernel panic</small>
+        </label>
+
+        <label class="opt">
+          <input type="radio" name="payload" value="goldhen" checked>
+          <span>GoldHEN</span>
+          <small>selected payload</small>
+        </label>
+
+        <label class="opt opt-auto">
+          <input type="checkbox" id="auto" checked>
+          <span>autostart</span>
+        </label>
+
+        <button class="btn" type="submit">
+          START
+        </button>
+
+        <p class="count" id="count"></p>
+        <p class="count" id="cache" aria-live="polite"></p>
+      </form>
+    </main>
+  </div>
+
+  <p class="byline">
+    by l1f3less, credits to m0zz or well0nez
+  </p>
+
+  <script src="launch.js"></script>
+</body>
 </html>

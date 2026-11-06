@@ -1,4 +1,4 @@
-# afterglow (web)
+# pshost
 
 Kernel exploit for the PlayStation 4 on firmware **13.52** and **14.00**,
 run from the console's own browser. It leaves the kernel readable and
@@ -104,7 +104,7 @@ which model and firmware you tried.
 * **TheFlow, ChendoChap, abc, AlAzif, LightningMods, @egycnq** — the PS4 kernel
   patch and sandbox escape lineage these payloads build on
 * everyone who publishes their findings instead of sitting on them
-
+* **L1f3less0** - Ui Remaker
 ## Legal
 
 Security research on hardware we own. No Sony code is redistributed.
